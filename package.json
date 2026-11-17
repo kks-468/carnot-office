@@ -1,0 +1,24 @@
+{
+  "name": "carnot-rnd-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Carnot 연구행정 지원 플랫폼 - 로컬 개발용 (프론트 + Express 백엔드)",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node --watch server/index.js",
+    "start": "node server/index.js",
+    "reset": "node -e \"import('node:fs').then(f=>f.rmSync('data/state.json',{force:true}))\" && echo 시연 데이터로 되돌렸어요"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "html2canvas": "1.4.1",
+    "jspdf": "2.5.1",
+    "jszip": "3.10.1",
+    "pdfjs-dist": "3.11.174"
+  }
+}

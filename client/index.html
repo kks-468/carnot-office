@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carnot office</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/html2canvas.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
+<link rel="icon" href="assets/logo.webp">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="root"></div>
+<div id="a4stage" aria-hidden="true"></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<!-- claude-shim.js: 프로토타입이 쓰던 AI·내려받기 기능을 로컬 서버(/api/ai)와 브라우저 다운로드로 연결 -->
+<script src="js/claude-shim.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
