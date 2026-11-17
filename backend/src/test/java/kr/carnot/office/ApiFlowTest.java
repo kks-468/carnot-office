@@ -103,4 +103,55 @@ class ApiFlowTest {
         JsonNode r = sync(ga, "{\"upserts\":[{\"kind\":\"project\",\"id\":\"A\",\"data\":" + a + "}]}");
         assertThat(r.get("corrected").get(0).at("/data/name").asText()).isEqualTo(name);
     }
+
+    @Test
+    void 급여_열람_권한이_없으면_급여를_걸러_보내고_못_고친다() throws Exception {
+        Cookie p1 = login("saesol", "seoyun.kim"); // 연구책임자: 시연 설정상 급여 열람 권한 없음
+        JsonNode d = state(p1);
+        assertThat(d.at("/me/canPay").asBoolean()).isFalse();
+        assertThat(d.get("raises").size()).isZero();
+        JsonNode r = sync(p1, "{\"docs\":{\"pay\":{}}}");
+        assertThat(r.get("rejected").size()).isEqualTo(1);
+
+        Cookie p4 = login("saesol", "minjae.choi"); // 연구행정팀: 급여 열람 권한 있음
+        assertThat(state(p4).at("/me/canPay").asBoolean()).isTrue();
+
+        // 관리자가 '인건비 계산용 급여 보이기'를 끄면 p1은 자기 급여만 받아요
+        Cookie admin = login("saesol", "admin");
+        JsonNode org = state(admin).at("/orgs/sa").deepCopy();
+        ((com.fasterxml.jackson.databind.node.ObjectNode) org.withObject("/acl").withObject("/pay")).put("forResearch", false);
+        assertThat(sync(admin, "{\"upserts\":[{\"kind\":\"org\",\"id\":\"sa\",\"data\":" + org + "}]}").get("rejected").size()).isZero();
+        JsonNode pay = state(p1).at("/pay/2026");
+        assertThat(pay.has("p1")).isTrue();
+        assertThat(pay.has("p2")).isFalse();
+        // 다시 켜면 함께 참여하는 과제 인력의 급여도 받아요
+        ((com.fasterxml.jackson.databind.node.ObjectNode) org.withObject("/acl").withObject("/pay")).put("forResearch", true);
+        sync(admin, "{\"upserts\":[{\"kind\":\"org\",\"id\":\"sa\",\"data\":" + org + "}]}");
+        assertThat(state(p1).at("/pay/2026").has("p2")).isTrue();
+    }
+
+    @Test
+    void 과제별로_열람_범위를_좁히면_그_과제는_보내지_않는다() throws Exception {
+        Cookie admin = login("saesol", "admin");
+        JsonNode org = state(admin).at("/orgs/sa").deepCopy();
+        // 과제 C는 관리자만 보게
+        ((com.fasterxml.jackson.databind.node.ObjectNode) org.withObject("/acl").withObject("/projects")).putObject("C");
+        JsonNode r = sync(admin, "{\"upserts\":[{\"kind\":\"org\",\"id\":\"sa\",\"data\":" + org + "}]}");
+        assertThat(r.get("rejected").size()).isZero();
+
+        Cookie p1 = login("saesol", "seoyun.kim");
+        JsonNode d = state(p1);
+        for (JsonNode p : d.get("projects")) assertThat(p.path("id").asText()).isNotEqualTo("C");
+        for (JsonNode e : d.get("entries")) assertThat(e.path("proj").asText()).isNotEqualTo("C");
+        // 숨긴 과제에 집행을 넣으려 해도 거절
+        r = sync(p1, "{\"upserts\":[{\"kind\":\"entry\",\"id\":\"x-c\",\"data\":{\"id\":\"x-c\",\"proj\":\"C\",\"org\":\"sa\",\"amount\":1}}]}");
+        assertThat(r.get("rejected").size()).isEqualTo(1);
+        // 관리자는 언제나 봐요
+        boolean adminSees = false;
+        for (JsonNode p : state(admin).get("projects")) if ("C".equals(p.path("id").asText())) adminSees = true;
+        assertThat(adminSees).isTrue();
+        // 비관리자는 열람 권한을 못 바꿔요
+        r = sync(p1, "{\"upserts\":[{\"kind\":\"org\",\"id\":\"sa\",\"data\":" + org + "}]}");
+        assertThat(r.get("rejected").size()).isEqualTo(1);
+    }
 }

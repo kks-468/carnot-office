@@ -1,6 +1,7 @@
 // 프로토타입에서 그대로 옮긴 로직이에요. 동작을 바꾸지 않으려고 원본 코드를 유지했어요.
 // 타입은 화면을 모두 옮긴 뒤 모듈별로 차례로 붙여 나가요.
 import { S, render } from './state';
+import { canResearch } from './acl';
 import { lineNorm } from './approval';
 import { LV_DEFAULT, PW_OK, TIERS, TODAY, UK_DEFAULT, XSHARE } from './catalog';
 
@@ -12,7 +13,8 @@ export const roleName=q=>q.role==='주관'?'총괄주관':q.role;
 export const partLabel=q=>q.role==='주관'?'총괄주관':`${q.tier||''} ${q.role}`.trim();
 export const sortParts=ps=>[...ps].sort((a,b)=>TIERS.indexOf(a.tier||'총괄')-TIERS.indexOf(b.tier||'총괄')||['주관','세부주관','참여'].indexOf(a.role)-['주관','세부주관','참여'].indexOf(b.role));
 export const part=(p,org)=>p?.parts.find(x=>x.org===org);
-export const joined=(p,org)=>part(p,org)?.status==='수락';
+// 우리 기관 과제라도 연구비 열람 권한(설정 → 열람 권한)이 없으면 참여하지 않은 것처럼 숨겨요.
+export const joined=(p,org)=>part(p,org)?.status==='수락'&&(org!==S.view||canResearch(p));
 export const visible=()=>S.projects.filter(p=>joined(p,S.view)&&!p.archived&&p.phase!=='제안');
 export const live=p=>!!p&&joined(p,S.view)&&!p.archived&&p.phase!=='제안';
 export const archivedList=()=>S.projects.filter(p=>joined(p,S.view)&&p.archived);

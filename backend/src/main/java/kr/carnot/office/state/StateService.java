@@ -47,15 +47,26 @@ public class StateService {
         ObjectNode out = om.createObjectNode();
         String me = u.orgId();
 
-        // ---- 과제 ----
+        // ---- 보는 사람과 열람 권한 ----
+        AccessRules.Viewer viewer = viewer(u);
+        boolean canPay = AccessRules.canPay(viewer);
+
+        // ---- 과제 ---- (연구비 열람 권한이 없는 과제는 아예 보내지 않아요)
         List<Participation> mine = records.participationsOf(me);
-        Set<String> accepted = mine.stream().filter(p -> ACCEPTED.contains(p.status())).map(Participation::projectId).collect(Collectors.toSet());
+        Set<String> joinedIds = mine.stream().filter(p -> ACCEPTED.contains(p.status())).map(Participation::projectId).collect(Collectors.toSet());
+        Set<String> accepted = new HashSet<>();
+        Set<String> hidden = new HashSet<>();
         Set<String> lead = mine.stream().filter(p -> ACCEPTED.contains(p.status()) && "주관".equals(p.role())).map(Participation::projectId).collect(Collectors.toSet());
         Set<String> allIds = mine.stream().map(Participation::projectId).collect(Collectors.toSet());
         ArrayNode projects = out.putArray("projects");
         Set<String> memberIds = new HashSet<>();
         for (Rec r : records.byIds(Kind.PROJECT, allIds)) {
-            if (accepted.contains(r.id())) {
+            if (joinedIds.contains(r.id()) && !AccessRules.canResearch(viewer, r.id(), r.data())) {
+                hidden.add(r.id());
+                continue;
+            }
+            if (joinedIds.contains(r.id())) {
+                accepted.add(r.id());
                 ObjectNode d = r.data().deepCopy();
                 if (!lead.contains(r.id())) d.remove("invites");
                 projects.add(d);
@@ -126,15 +137,25 @@ public class StateService {
             collect.add(d);
         }
 
-        // ---- 우리 기관 문서 ----
+        // ---- 우리 기관 문서 ---- (숨긴 과제의 집행·회의·일정·자료와 그 증빙은 빼요)
+        Set<String> hiddenEntries = new HashSet<>();
         for (Kind k : Kind.values()) {
-            if (k.access != Kind.Access.PRIVATE) continue;
-            if (k.map) {
-                ObjectNode m = out.putObject(k.stateKey);
-                for (Rec r : records.byOrg(k, me)) m.set(r.id(), r.data().has("_v") && r.data().size() == 1 ? r.data().get("_v") : r.data());
-            } else {
-                ArrayNode a = out.putArray(k.stateKey);
-                records.byOrg(k, me).forEach(r -> a.add(r.data()));
+            if (k.access != Kind.Access.PRIVATE || k.map) continue;
+            ArrayNode a = out.putArray(k.stateKey);
+            for (Rec r : records.byOrg(k, me)) {
+                if (r.projectId() != null && hidden.contains(r.projectId())) {
+                    if (k == Kind.ENTRY) hiddenEntries.add(r.id());
+                    continue;
+                }
+                a.add(r.data());
+            }
+        }
+        for (Kind k : Kind.values()) {
+            if (k.access != Kind.Access.PRIVATE || !k.map) continue;
+            ObjectNode m = out.putObject(k.stateKey);
+            for (Rec r : records.byOrg(k, me)) {
+                if (hiddenEntries.contains(r.id().split("\\|")[0])) continue;
+                m.set(r.id(), r.data().has("_v") && r.data().size() == 1 ? r.data().get("_v") : r.data());
             }
         }
         // 다른 참여 기관의 회의: 날짜·주제만 (비용·참석자는 그 기관만 봐요)
@@ -176,13 +197,45 @@ public class StateService {
                     return 0;
                 }).list();
 
-        // ---- 기관 설정 묶음 ----
-        for (Object[] kv : records.orgDocs(me)) out.set((String) kv[0], (JsonNode) kv[1]);
+        // ---- 기관 설정 묶음 ---- (급여 열람 권한이 없으면 볼 수 있는 과제의 인건비 계산에 필요한 사람 몫만)
+        // 관리자가 '연구비 열람자에게 인건비 계산용 급여 보이기'를 끄면 자기 급여만 보내요.
+        boolean forResearch = AccessRules.rule(viewer.org(), "pay").path("forResearch").asBoolean(true);
+        Set<String> payPeople = forResearch ? new HashSet<>(memberIds) : new HashSet<>();
+        payPeople.add(u.personId());
+        for (Object[] kv : records.orgDocs(me)) {
+            String key = (String) kv[0];
+            JsonNode v = (JsonNode) kv[1];
+            if (!canPay && AccessRules.PAY_READ.contains(key)) v = payOnly(key, v, payPeople);
+            out.set(key, v);
+        }
 
         ObjectNode meNode = out.putObject("me");
         meNode.put("personId", u.personId());
         meNode.put("orgId", me);
         meNode.put("admin", u.admin());
+        meNode.put("canPay", canPay);
+        return out;
+    }
+
+    AccessRules.Viewer viewer(CurrentUser u) {
+        JsonNode org = records.find(Kind.ORG, u.orgId()).map(Rec::data).orElse(null);
+        JsonNode person = records.find(Kind.PERSON, u.personId()).map(Rec::data).orElse(null);
+        return new AccessRules.Viewer(u.personId(), u.admin(), person, org);
+    }
+
+    /** 급여 묶음에서 허용된 사람 몫만 남겨요. {연도: {사람: 값}} 또는 {사람: 값} 모양이에요. */
+    JsonNode payOnly(String key, JsonNode v, Set<String> people) {
+        if (key.equals("raises")) return om.createArrayNode();
+        if (!v.isObject()) return v;
+        ObjectNode out = om.createObjectNode();
+        for (var e : v.properties()) {
+            if (people.contains(e.getKey())) out.set(e.getKey(), e.getValue());
+            else if (e.getValue().isObject() && !key.equals("leaveAdj")) {
+                ObjectNode inner = om.createObjectNode();
+                for (var f : e.getValue().properties()) if (people.contains(f.getKey())) inner.set(f.getKey(), f.getValue());
+                out.set(e.getKey(), inner);
+            }
+        }
         return out;
     }
 

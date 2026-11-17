@@ -4,6 +4,7 @@
 import { S, render, onRender } from '../core/state';
 import { toast } from '../core/runtime';
 import { api, type ApiError } from './api';
+import { canPay } from '../core/acl';
 
 type Kind = { kind: string; key: string; map?: boolean };
 /** 서버의 Kind와 같은 짝이에요 (backend store/Kind.java). */
@@ -27,6 +28,8 @@ export const KINDS: Kind[] = [
 ];
 /** 기관마다 통째로 저장하는 설정 (backend store/OrgDocKeys.java). */
 export const DOC_KEYS = ['expGroups', 'pay', 'ins', 'rkind', 'raises', 'payFree', 'pgrade', 'grades', 'leaveAdj', 'leaveSet', 'stamps', 'orgSeal', 'docSeal', 'ls', 'docFooter', 'docSign', 'srcOv', 'rates', 'TPL'];
+/** 급여 정보 묶음: 급여 열람 권한이 없으면 보내지 않아요 (서버 AccessRules.PAY_WRITE와 같아요). */
+const PAY_KEYS = new Set(['pay', 'payFree', 'pgrade', 'raises', 'leaveAdj', 'grades', 'leaveSet', 'ins']);
 const PRIVATE = new Set(['notice', 'cevent', 'report', 'appr', 'meeting', 'entry', 'receipt', 'doc', 'sched', 'made', 'file']);
 
 export const server = { on: false, me: null as null | { personId: string; orgId: string; admin: boolean } };
@@ -130,7 +133,7 @@ function collect(): { upserts: any[]; deletes: any[]; docs: Record<string, unkno
   for (const key of DOC_KEYS) {
     const j = JSON.stringify(S[key] ?? null);
     if (docSnap.get(key) === j) continue;
-    docs[key] = S[key] ?? null;
+    if (!PAY_KEYS.has(key) || canPay()) docs[key] = S[key] ?? null;
     marks.push(() => docSnap.set(key, j));
   }
   return { upserts, deletes, docs, marks };

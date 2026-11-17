@@ -13,6 +13,8 @@ import { ExpertPage } from '../pages/expert/ExpertPage';
 import { LibraryPage } from '../pages/library/LibraryPage';
 import { SettingsPage, SetTabs } from '../pages/settings/SettingsPage';
 import { StaffPage } from '../pages/staff/StaffPage';
+import { AclSettings } from '../pages/settings/AclSettings';
+import { canPay } from '../core/acl';
 
 const PAGES: Record<string, () => JSX.Element> = {
   home: HomePage,
@@ -25,6 +27,7 @@ const PAGES: Record<string, () => JSX.Element> = {
   library: LibraryPage,
   settings: SettingsPage,
   staff: StaffPage,
+  acl: AclSettings,
 };
 
 export function MainBody() {
@@ -38,7 +41,9 @@ export function MainBody() {
       </>
     );
   if (S.menu === 'forms') return <FormsBody />;
-  const Page = PAGES[S.menu] || HomePage;
+  let Page = PAGES[S.menu] || HomePage;
+  // 급여 열람 권한이 없으면 직원·급여 화면을 열지 않아요
+  if (S.menu === 'staff' && !canPay()) Page = NoAccess;
   return (
     <>
       <TopBar tabs={S.menu === 'settings' ? <SetTabs /> : undefined} />
@@ -49,4 +54,8 @@ export function MainBody() {
       </div>
     </>
   );
+}
+
+function NoAccess() {
+  return <div className="notice">이 화면을 볼 권한이 없어요. 기관 관리자에게 열람 권한을 요청해 주세요.</div>;
 }

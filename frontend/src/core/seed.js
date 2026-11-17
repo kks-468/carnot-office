@@ -179,4 +179,6 @@ S.collect.push({id:'cp1',proj:'D',kind:'prop',title:'세부과제별 제안서 �
   A.sMemo='12월 시운전 결과는 각 기관 12/20까지 공유';})();
 seedPropYears();
 seedAppr();migrateLines();
+// 시연: 새솔대는 연구행정팀이 급여와 모든 과제 연구비를 볼 수 있게 열람 권한을 정해 뒀어요 (설정 → 열람 권한).
+S.orgs.sa.acl={pay:{units:['연구행정팀']},research:{members:true,units:['연구행정팀']}};
 }

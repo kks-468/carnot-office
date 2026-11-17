@@ -74,6 +74,10 @@ public class SyncService {
                     rejected.add(new Rejected("doc", e.getKey(), "저장할 수 없는 항목이에요."));
                     continue;
                 }
+                if (AccessRules.PAY_WRITE.contains(e.getKey()) && !AccessRules.canPay(c.viewer())) {
+                    rejected.add(new Rejected("doc", e.getKey(), "급여 정보는 열람 권한이 있는 사람만 고쳐요."));
+                    continue;
+                }
                 records.putOrgDoc(u.orgId(), e.getKey(), e.getValue());
                 applied++;
             }
@@ -112,6 +116,26 @@ public class SyncService {
 
         void reset() {
             parts = null;
+            seen.clear();
+        }
+
+        private AccessRules.Viewer viewer;
+        private final Map<String, Boolean> seen = new java.util.HashMap<>();
+
+        AccessRules.Viewer viewer() {
+            if (viewer == null) {
+                JsonNode org = records.find(Kind.ORG, u.orgId()).map(Rec::data).orElse(null);
+                JsonNode person = records.find(Kind.PERSON, u.personId()).map(Rec::data).orElse(null);
+                viewer = new AccessRules.Viewer(u.personId(), u.admin(), person, org);
+            }
+            return viewer;
+        }
+
+        /** 참여(수락) 중이고 연구비 열람 권한도 있는 과제인지 */
+        boolean visible(String projectId) {
+            if (projectId == null || projectId.isEmpty()) return true;
+            return seen.computeIfAbsent(projectId, id -> accepted(id)
+                && records.find(Kind.PROJECT, id).map(r -> AccessRules.canResearch(viewer(), id, r.data())).orElse(false));
         }
     }
 
@@ -136,11 +160,12 @@ public class SyncService {
         switch (k.access) {
             case PRIVATE -> {
                 if (existing.isPresent() && !me.equals(existing.get().orgId())) throw deny("다른 기관 문서는 고칠 수 없어요.");
+                if (existing.isPresent() && !c.visible(existing.get().projectId())) throw deny("열람 권한이 없는 과제예요.");
                 if (data.has("org") && !k.map) data.put("org", me);
                 if (data.has("ext")) throw deny("다른 기관 회의는 고칠 수 없어요.");
                 String proj = Json.text(data, "proj");
-                if (!proj.isEmpty() && (k == Kind.ENTRY || k == Kind.MEETING || k == Kind.SCHED || k == Kind.DOC) && !c.accepted(proj))
-                    throw deny("참여하지 않는 과제예요.");
+                if (!proj.isEmpty() && (k == Kind.ENTRY || k == Kind.MEETING || k == Kind.SCHED || k == Kind.DOC) && !c.visible(proj))
+                    throw deny("참여하지 않거나 열람 권한이 없는 과제예요.");
                 records.upsert(k, it.id(), me, proj.isEmpty() ? null : proj, data, c.u.personId());
                 return null;
             }
@@ -181,7 +206,7 @@ public class SyncService {
             }
             case PROJECT_CHILD -> {
                 String proj = existing.map(Rec::projectId).orElse(Json.text(data, "proj"));
-                if (proj == null || proj.isEmpty() || !c.accepted(proj)) throw deny("참여하지 않는 과제예요.");
+                if (proj == null || proj.isEmpty() || !c.visible(proj)) throw deny("참여하지 않거나 열람 권한이 없는 과제예요.");
                 data.put("proj", proj);
                 if (c.lead(proj)) {
                     records.upsert(k, it.id(), existing.map(Rec::orgId).orElse(me), proj, data, c.u.personId());
@@ -218,6 +243,7 @@ public class SyncService {
         } else {
             var p = c.part(id);
             if (p == null) throw deny("참여하지 않는 과제예요.");
+            if (c.accepted(id) && !AccessRules.canResearch(c.viewer(), id, existing.data())) throw deny("열람 권한이 없는 과제예요.");
             toSave = c.lead(id) ? data : ProjectGuard.mergeNonLead(existing.data(), data, me, c.myPeople());
             // 주관 기관이 바뀌거나 사라지면 안 돼요
             if (c.lead(id)) {
@@ -256,6 +282,7 @@ public class SyncService {
         switch (k.access) {
             case PRIVATE -> {
                 if (!me.equals(r.orgId())) throw deny("다른 기관 문서는 지울 수 없어요.");
+                if (!c.visible(r.projectId())) throw deny("열람 권한이 없는 과제예요.");
             }
             case PEOPLE -> {
                 if (!me.equals(r.orgId()) || !c.u.admin()) throw deny("구성원은 기관 관리자만 지워요.");

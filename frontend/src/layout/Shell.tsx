@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useS } from '../core/state';
 import { MENUS, MENU_NAME } from '../core/catalog';
 import { me, isLead } from '../core/org';
+import { canPay, isOrgAdmin } from '../core/acl';
 import { apvList } from '../core/approval';
 import { Btn, Nav } from '../ui/primitives';
 import { Footer } from './Footer';
@@ -17,7 +18,7 @@ export function Shell() {
     S.projects
       .filter((p: any) => isLead(p) && !p.archived && p.consortium && (p.phase === '제안') === (ph === 'teamProp'))
       .reduce((n: number, p: any) => n + p.parts.filter((q: any) => q.status === '신청 중').length, 0);
-  const menus = (MENUS as [string, string][]).map((x) =>
+  const menus = (MENUS as [string, string][]).filter((x) => (x[0] !== 'staff' || canPay()) && (x[0] !== 'acl' || isOrgAdmin())).map((x) =>
     x[0] === 'approval' && pend
       ? [x[0], x[1], <span className="soon">{pend}</span>]
       : (x[0] === 'team' || x[0] === 'teamProp') && treqOf(x[0])

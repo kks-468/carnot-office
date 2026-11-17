@@ -4,6 +4,7 @@ import { CAT, ITEMS, TODAY } from '../../core/catalog';
 import { schedEvents } from '../../core/meeting';
 import { peopleOf } from '../../core/org';
 import { costBase, payOf, rkOf } from '../../core/pay';
+import { salaryVisible } from '../../core/acl';
 import { S } from '../../core/state';
 import { eok, fdate, months, pct, sum, won, ymd } from '../../core/util';
 import { Legend } from './AdminBody';
@@ -367,9 +368,15 @@ export function ProjLabor({ p }: any) {
                       {x.role} · {x.unit}
                     </td>
                     <td className="r num">
-                      {eok(costBase(x.id))}
-                      <br />
-                      <span className="small muted">급여 {eok(payOf(x.id))}</span>
+                      {salaryVisible(x.id) ? (
+                        <>
+                          {eok(costBase(x.id))}
+                          <br />
+                          <span className="small muted">급여 {eok(payOf(x.id))}</span>
+                        </>
+                      ) : (
+                        <span className="small muted" title="급여 열람 권한이 없어요">•••</span>
+                      )}
                     </td>
                     <td className="r">
                       <label>

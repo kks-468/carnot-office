@@ -65,7 +65,7 @@ export const PRESET={'대학·연구기관':[0,0],'중소기업':[25,10],'중견
 export const LOGIN={p1:'seoyun.kim',p2:'dohyun.park',p3:'harin.lee',p4:'minjae.choi',p5:'wooseok.jung',p6:'jia.han',p7:'taeo.kang',p8:'daeun.jung',p9:'jimin.oh',p10:'taeho.yoon',p11:'sua.bae',p12:'junghoon.han',p13:'kyungmin.seo',p14:'sungho.yoon'};
 export const XSHARE={org:'회사 전체',unit:'부서 공유',me:'나만 보기'};
 export const PEOPLE_SUB={'회의비':'pe','회의·세미나 개최비':'pe','야근·특근 식대':'p','국내여비':'p','국외 출장여비':'p','교육훈련비':'p','학회·세미나 참가비':'p','전문가활용비':'e'};
-export const MENUS=[['home','홈'],['-','업무지원'],['approval','전자결재'],['report','업무보고'],['ccal','회사일정'],['-','연구단 관리'],['teamProp','연구단 제안관리'],['team','연구단 연구관리'],['-','연구 관리'],['proposal','연구제안 관리'],['admin','연구행정 관리'],['expert','전문가 관리'],['library','자료실'],['-','기관설정'],['forms','양식 관리'],['staff','직원·급여'],['settings','설정']];
+export const MENUS=[['home','홈'],['-','업무지원'],['approval','전자결재'],['report','업무보고'],['ccal','회사일정'],['-','연구단 관리'],['teamProp','연구단 제안관리'],['team','연구단 연구관리'],['-','연구 관리'],['proposal','연구제안 관리'],['admin','연구행정 관리'],['expert','전문가 관리'],['library','자료실'],['-','기관설정'],['forms','양식 관리'],['staff','직원·급여'],['settings','설정'],['acl','열람 권한']];
 export const MENU_NAME=Object.fromEntries(MENUS.filter(m=>m[0]!=='-').map(m=>[m[0],m[1]]));
 export const PCOL=['#2F6FDB','#E07A1F','#2E9E6B','#9B59B6','#C0392B','#16A0A0','#8A6D3B'];
 export const LV_DEFAULT=()=>[{k:'L1',n:'대표'},{k:'L2',n:'본부장'},{k:'L3',n:'팀장'},{k:'L4',n:'직원'}];

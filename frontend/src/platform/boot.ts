@@ -9,6 +9,7 @@ import { doLogin } from '../core/org';
 import { probe, api } from './api';
 import { applyState, clearData, server, startSync } from './sync';
 import { installServerActions } from './serverActions';
+import { installAclActions } from '../core/aclActions';
 
 export async function boot(): Promise<void> {
   // 화면 상태(메뉴·탭 등)의 기본값은 시연 데이터 만들기에서 함께 정해져요.
@@ -30,6 +31,7 @@ export async function boot(): Promise<void> {
   } else {
     S.demo = true;
   }
+  installAclActions();
   installEvents();
   startSync();
   render();

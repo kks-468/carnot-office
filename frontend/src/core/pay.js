@@ -1,6 +1,7 @@
 // 프로토타입에서 그대로 옮긴 로직이에요. 동작을 바꾸지 않으려고 원본 코드를 유지했어요.
 // 타입은 화면을 모두 옮긴 뒤 모듈별로 차례로 붙여 나가요.
 import { S, render } from './state';
+import { salaryVisible } from './acl';
 import { HALFK, HIRE, INS_Y, TODAY } from './catalog';
 import { person } from './org';
 import { addDays, sum } from './util';
@@ -9,7 +10,8 @@ export const payYears=()=>[...new Set([...Object.keys(S.pay).map(Number),S.payYe
 export const insOf=(org,yr)=>{S.ins[org]=S.ins[org]||{};return S.ins[org][yr]||(S.ins[org][yr]={...(INS_Y[yr]||INS_Y[2026])})};
 export const gradesOf=(org,yr)=>{S.grades[org]=S.grades[org]||{};return S.grades[org][yr]||(S.grades[org][yr]=[])};
 export const pgOf=(pid,yr=S.payYear)=>(S.pgrade[yr]||{})[pid];
-export const payParts=(pid,yr=S.payYear)=>{const x=S.people.find(y=>y.id===pid);const g=pgOf(pid,yr);if(g&&x){const row=gradesOf(x.org,yr).find(r=>+r.no===+g);if(row)return{tax:+row.tax||0,free:+row.free||0,src:'grade',g:row}}return{tax:+(S.pay[yr]?.[pid]||0),free:+(S.payFree[yr]?.[pid]||0),src:'manual'}};
+// 급여 열람 권한이 없고 '인건비 계산용 급여 보이기'도 꺼져 있으면 다른 사람 급여는 0으로 봐요 (설정 → 열람 권한).
+export const payParts=(pid,yr=S.payYear)=>{if(!salaryVisible(pid))return{tax:0,free:0,src:'hidden'};const x=S.people.find(y=>y.id===pid);const g=pgOf(pid,yr);if(g&&x){const row=gradesOf(x.org,yr).find(r=>+r.no===+g);if(row)return{tax:+row.tax||0,free:+row.free||0,src:'grade',g:row}}return{tax:+(S.pay[yr]?.[pid]||0),free:+(S.payFree[yr]?.[pid]||0),src:'manual'}};
 export const payOf=(pid,yr=S.payYear)=>{const q=payParts(pid,yr);return q.tax+q.free};
 export const costParts=(pid,yr=S.payYear)=>{const x=S.people.find(y=>y.id===pid);const q=payParts(pid,yr);const sal=q.tax+q.free;if(!x)return{sal,tax:q.tax,free:q.free,src:q.src,ins:0,ret:0,tot:sal};const r=insOf(x.org,yr);const ins=x.noIns?0:Math.round(q.tax*(r.np+r.hi+r.hi*r.ltc/100+r.ei+r.ia)/100);const ret=x.noRet?0:Math.round(sal/12);return{sal,tax:q.tax,free:q.free,src:q.src,g:q.g,ins,ret,tot:sal+ins+ret}};
 export const costBase=(pid,yr)=>costParts(pid,yr).tot;
