@@ -1,5 +1,18 @@
+# 의존성 · 빌드 결과
 node_modules/
+dist/
+build/
+.gradle/
+backend/src/main/resources/static/
+
+# 비밀 값 · 로컬 데이터 (절대 올리지 마세요)
 .env
+.env.*
+!.env.example
 data/
+
+# 편집기 · OS
+.idea/
+*.iml
 .DS_Store
 *.log

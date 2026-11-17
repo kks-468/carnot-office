@@ -1,0 +1,60 @@
+server:
+  port: ${PORT:8080}
+  servlet:
+    session:
+      timeout: 8h
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${COOKIE_SECURE:false}
+  compression:
+    enabled: true
+  error:
+    include-message: never
+
+spring:
+  application:
+    name: carnot-office
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/carnot}
+    username: ${DB_USER:carnot}
+    password: ${DB_PASSWORD:carnot}
+  flyway:
+    enabled: true
+  session:
+    store-type: jdbc
+    jdbc:
+      initialize-schema: never
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 60MB
+  jackson:
+    default-property-inclusion: non_null
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USER:}
+    password: ${MAIL_PASSWORD:}
+
+management:
+  health:
+    mail:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+carnot:
+  # 시연 데이터: DB가 비어 있을 때 한 번 넣어요. 운영에서는 꼭 false로 두세요.
+  demo:
+    enabled: ${DEMO_SEED:false}
+    password: ${DEMO_PASSWORD:demo1234}
+  mail-from: ${MAIL_FROM:no-reply@carnot.kr}
+  ai:
+    api-key: ${ANTHROPIC_API_KEY:}
+    model: ${AI_MODEL:claude-sonnet-5-5}
+    model-quick: ${AI_MODEL_QUICK:claude-haiku-5-5}
+  # 요청 한 번에 보낼 수 있는 데이터 크기 (첨부 파일 포함)
+  max-sync-bytes: 50000000

@@ -1,129 +1,130 @@
-# Carnot office · 연구행정 그룹웨어 (로컬 개발판)
+# Carnot office
 
-연구과제 행정(제안·예산·집행·증빙·연구단)과 회사 업무(전자결재·업무보고·회사일정·직원·급여)를 한곳에서 다루는 그룹웨어 프로토타입이에요.
-VS Code에서 고치고 돌려 볼 수 있게 프론트와 백엔드로 나눠 두었어요.
+대학 산학협력단과 연구비 행정 기관을 위한 연구행정 그룹웨어예요.
+연구제안·연구행정(집행·증빙)·연구단(여러 기관 공동 과제)·전자결재·업무보고·회사일정·직원 급여를 한곳에서 다뤄요.
 
-**주요 메뉴**: 홈 · 업무지원(전자결재, 업무보고, 회사일정) · 연구단 과제 · 연구 관리(연구제안, 연구행정, 전문가, 자료실) · 기관설정(양식, 직원·급여, 설정)
+| 폴더 | 내용 |
+| --- | --- |
+| `frontend/` | 화면 — React 18 + TypeScript + Vite |
+| `backend/` | 서버 — Java 21 + Spring Boot 3.5 + PostgreSQL 16 (Flyway) |
+| `prototype/` | 예전 단일 HTML 프로토타입 (기능 비교용 원본, 수정하지 않아요) |
 
-> 시연 로그인: 회사 아이디 `admin` / 아이디 `admin` / 비밀번호 `admin` (시연용이에요. 실서비스 전에 반드시 없애야 해요)
+## 빠르게 실행하기
 
-- **프론트엔드** (`client/`): 화면 전체. 순수 HTML·CSS·JavaScript라서 빌드 과정이 없어요.
-- **백엔드** (`server/`): Node.js(Express) 서버. 화면을 띄우고, 데이터를 저장하고, AI(Anthropic API)를 대신 호출해요.
-
-> 지금 백엔드는 **저장과 AI 연결만** 맡아요. 계산·권한·화면 로직은 아직 프론트(`app.js`)에 있어요.
-> 실제 서비스로 가려면 DB·로그인·기관별 권한을 서버로 옮겨야 해요. 순서는 아래 "다음 단계"와 `docs/데이터모델.md`에 정리해 뒀어요.
-
----
-
-## 1. 준비물
-
-| 준비물 | 설명 |
-|---|---|
-| Node.js 20 이상 (LTS) | https://nodejs.org 에서 LTS 버전 설치. 터미널에서 `node -v`로 확인 |
-| VS Code | https://code.visualstudio.com |
-| Anthropic API 키 (선택) | AI 회의록·영수증 읽기·추진 일정 불러오기를 켜려면 필요. https://platform.claude.com 에서 발급 |
-
-## 2. 처음 실행하기
-
-1. 압축을 풀고 VS Code에서 **파일 → 폴더 열기**로 `carnot` 폴더를 열어요.
-2. **터미널 → 새 터미널**을 열고 아래를 차례로 입력해요.
+### 1) 시연 모드 (서버 없이 화면만)
 
 ```bash
-npm install            # 필요한 라이브러리 설치 (처음 한 번)
-cp .env.example .env   # 설정 파일 만들기 (Windows PowerShell: copy .env.example .env)
-npm run dev            # 서버 실행 (server/ 코드를 고치면 자동 재시작, client/ 는 브라우저 새로고침)
+cd frontend
+npm install
+npm run dev            # http://localhost:5173
 ```
 
-3. 브라우저에서 **http://localhost:3000** 을 열어요.
+백엔드가 없으면 브라우저 안의 시연 데이터로 동작해요. 위쪽 시연 막대에서 기관·사람을 바꿔 볼 수 있고, 새로고침하면 처음 상태로 돌아가요.
 
-AI 없이도 모든 화면이 돌아가요. AI 자리에는 근거 자료로 조립한 "예시 초안"이 들어가요.
+### 2) 개발 (서버 + 화면)
 
-## 3. AI 켜기
+```bash
+# PostgreSQL 준비 (한 번)
+createuser -P carnot          # 비밀번호: carnot
+createdb -O carnot carnot
 
-`.env` 파일에 키를 넣고 서버를 다시 시작하면 돼요.
+# 서버 (http://localhost:8080) — DEMO_SEED=true면 빈 DB에 시연 데이터를 넣어요
+cd backend
+DEMO_SEED=true ./gradlew bootRun
 
-```
-ANTHROPIC_API_KEY=sk-ant-...
-AI_MODEL=claude-sonnet-5-5        # 회의록·자문의견서·추진 일정
-AI_MODEL_QUICK=claude-haiku-5-5   # 영수증 사진 읽기
-```
-
-키는 서버에만 있고 브라우저로는 보내지 않아요. `.env`는 `.gitignore`에 들어 있어서 git에도 올라가지 않아요.
-
-## 4. 데이터 저장
-
-- 화면에서 바꾼 내용은 0.8초 뒤 자동으로 `data/state.json`에 저장되고, 새로고침해도 남아요.
-- 시연 데이터로 되돌리려면 서버를 끈 뒤 `npm run reset`을 실행하고 다시 켜요.
-- 아직 저장하지 않는 것: 업로드한 파일 원본(PDF·한글·엑셀), 모달에 입력 중인 값. 제안서 PDF는 읽어 낸 **글자**만 저장돼요.
-
-## 5. 폴더 구조
-
-```
-carnot/
-├─ client/                 프론트엔드 (서버가 그대로 보여 줘요)
-│  ├─ index.html
-│  ├─ css/app.css          디자인 (색 토큰은 맨 위 :root)
-│  ├─ js/claude-shim.js    AI·내려받기를 로컬 서버/브라우저로 연결
-│  ├─ js/app.js            화면 전체 로직
-│  └─ assets/logo.webp
-├─ server/                 백엔드
-│  ├─ index.js             서버 시작, 라우트 연결, 라이브러리 제공
-│  ├─ store.js             파일 저장소 (data/state.json)
-│  └─ routes/
-│     ├─ state.js          GET/PUT/DELETE /api/state
-│     └─ ai.js             /api/ai/status, /api/ai/stream, /api/ai/json
-├─ docs/데이터모델.md      실제 DB로 옮길 때의 테이블·API 설계
-├─ .vscode/                디버그 실행 설정
-├─ .env.example
-└─ package.json
+# 화면 (http://localhost:5173, /api는 8080으로 넘어가요)
+cd frontend
+npm run dev
 ```
 
-## 6. app.js 읽는 법
+시연 데이터 계정 (비밀번호는 모두 `demo1234`):
 
-한 파일이지만 구역별로 `/* ===== 이름 ===== */` 주석이 붙어 있어요. VS Code에서 `Ctrl+Shift+O`(Mac은 `Cmd+Shift+O`)를 누르면 함수 목록으로 바로 이동할 수 있어요.
+| 회사 아이디 | 아이디 | 사람 |
+| --- | --- | --- |
+| `saesol` | `seoyun.kim` | 새솔대 연구책임자 |
+| `saesol` | `admin` | 새솔대 기관 관리자 |
+| `gaon` | `wooseok.jung` | 가온소재 (연구단 참여기관) |
+| `nuritech` | `taeo.kang` | 누리테크 |
 
-| 구역 | 내용 |
-|---|---|
-| 증빙 기준 `CAT` | 별표 7 기준 비목·세부유형·증빙서류 |
-| 샘플 데이터 `S` | 화면 상태 전체. 기관·사람·과제·집행·회의·결재 등 |
-| 계산 | 예산·집행·참여율·인건비 기준액·연차·현금/현물 |
-| 화면 함수 `xxxPage()` | `cardsPage`, `evidPage`, `proposalPage`, `teamPage`, `staffPage` … |
-| `modalHtml()` | 모든 팝업 |
-| `render()` | 상태 `S`를 화면으로 다시 그림 |
-| `A` | 버튼 동작. HTML의 `data-a="이름"`과 연결 |
-| `CHANGE` | 파일 선택 등 change 동작. `data-a-change="이름"`과 연결 |
-| 맨 아래 | 서버 저장·불러오기 (`boot`, `scheduleSave`) |
+### 3) 배포 (Docker)
 
-**예시: 버튼 하나 추가하기**
-
-```js
-// 1) 화면 어딘가에
-`<button class="btn" data-a="hello" data-x="${p.id}">인사</button>`
-// 2) const A={ ... } 안에
-hello(x){ toast(`${proj(x).name} 안녕하세요`) },
+```bash
+cp .env.example .env          # DB_PASSWORD 등 값 채우기
+docker compose up -d --build  # http://서버:8080
 ```
 
-## 7. 디버그 (VS Code)
+이미지 하나에 화면과 서버가 같이 들어가요(Spring Boot가 화면 파일도 내보내요). 기관 내부 서버 설치도 같은 방법이에요.
+클라우드에 올린다면 CSAP 인증을 받은 국내 클라우드를 권장하고, 앞단에 HTTPS(로드밸런서·nginx)를 두고 `COOKIE_SECURE=true`로 켜 주세요.
 
-왼쪽 **실행 및 디버그**에서 고를 수 있어요.
+## 구조
 
-- **서버 실행 (디버그)**: `server/` 코드에 중단점을 걸 수 있어요.
-- **브라우저로 화면 열기 (디버그)**: `client/js/app.js`에 중단점을 걸 수 있어요. 서버가 먼저 떠 있어야 해요.
+### 화면 (`frontend/src`)
 
-## 8. 다음 단계 (실서비스로 가는 순서)
+```
+core/        프로토타입의 업무 로직 (예산·인건비·증빙·결재선·성과 계산, 동작 A, 시연 데이터)
+  state.ts   화면 상태 S 하나와 render() — S를 바꾸고 render()를 부르면 다시 그려요
+ui/          여러 화면이 함께 쓰는 부품 (In, Field, Btn, Nav, MonthGrid, Picker …)
+layout/      틀 (Shell, TopBar, MainBody, DemoBar)
+pages/       메뉴별 화면 (admin, approval, team, proposal, perf, staff, settings …)
+modals/      팝업 36종 (ModalHost)
+platform/    바깥과 연결 (api, 서버 저장 sync, 서버용 동작 serverActions, AI, PDF)
+```
 
-1. **DB 도입**: `data/state.json` 하나에 다 넣는 방식을 PostgreSQL 테이블로 나눠요 (`docs/데이터모델.md`).
-2. **로그인과 계정**: 회사 아이디 + 직원 아이디 로그인. 비밀번호 해시와 세션 또는 JWT를 써요. 지금 화면의 "보는 기관/보는 사람" 전환은 시연용이에요.
-3. **기관별 권한을 서버에서 확인**: 연구단 과제에서 다른 기관의 세부 집행이 안 보이는 규칙을 지금은 화면이 걸러요. 서버 API가 걸러야 안전해요.
-4. **파일 저장소**: 증빙·제안서 원본을 S3 호환 저장소 등에 보관해요.
-5. **프론트 나누기**: 화면이 커지면 React + Vite 같은 구조로 옮겨요. 지금의 `xxxPage()` 함수가 그대로 컴포넌트 단위가 돼요.
-6. **모바일 앱**: 영수증 촬영 화면은 `/api/ai/json`을 그대로 쓰는 앱으로 분리할 수 있어요.
+- 버튼은 `data-a="동작"` `data-x="값"`, 입력은 `data-b="이름"`으로 `core/actions`의 `A`와 연결돼요 (`core/events`가 한곳에서 받아요).
+- 입력칸은 `ui/primitives`의 `In`(비제어 입력)을 써요. 타자 치는 중에 다시 그려도 커서가 튀지 않아요.
+- 인쇄용 A4 문서·도장 그림은 `core/print`가 HTML 글로 만들어요 (PDF로 바꾸기 쉬워서).
 
-## 9. 자주 막히는 곳
+### 서버 (`backend/src/main/java/kr/carnot/office`)
 
-| 증상 | 해결 |
-|---|---|
-| `npm`을 찾을 수 없음 | Node.js 설치 후 VS Code를 다시 열어요 |
-| 3000번 포트 사용 중 | `.env`의 `PORT=3001`로 바꿔요 |
-| AI가 "예시 초안"만 나옴 | `.env`의 키 확인 → 서버 재시작 → 브라우저 새로고침 |
-| 화면이 이상하게 꼬임 | 서버 끄고 `npm run reset` → 다시 실행 |
+```
+account/   로그인·계정 활성화·직원 계정 관리 (bcrypt, 5번 틀리면 10분 잠금)
+signup/    기관 가입 (사업자번호 확인 · 회사 아이디 중복 확인 · 이메일 인증)
+state/     불러오기(StateService)와 저장(SyncService) — 기관별 권한을 여기서 지켜요
+project/   연구단 참여 신청 · 1회용 초대번호 · 초대할 기관 찾기
+ai/        Anthropic API 프록시 (API 키는 서버에만)
+store/     records · org_docs · project_orgs 표
+security/  세션 쿠키 + CSRF + CSP, 계정이 멈추면 바로 로그아웃
+demo/      시연 데이터 넣기 (DEMO_SEED=true일 때만)
+```
+
+### 데이터와 권한
+
+화면 데이터는 종류(`kind`)별 JSON 문서로 `records` 표에 저장하고, 권한 확인에 필요한 값(소유 기관·과제)만 열로 뽑아 둬요.
+화면은 `/api/state`로 한 번에 불러오고, 바뀐 문서만 `/api/sync`로 보내요 (0.6초씩 모아서).
+
+| 종류 | 누가 보나 | 누가 고치나 |
+| --- | --- | --- |
+| 집행·증빙·회의·결재·영수증·공지·업무보고·회사일정·문서 | 우리 기관 | 우리 기관 |
+| 연구단 과제 | 참여(수락) 기관 모두 | 총괄기관은 전부, 참여기관은 **자기 기관 몫만** (예산 항목·인력·성과 목표 칸·과업·공정·월별 계획) |
+| 다른 참여기관의 집행 | 월별 **합계만** | — |
+| 다른 참여기관의 회의 | 날짜·주제만 (비용·참석자는 숨김) | — |
+| 제안서 취합 제출본 | 총괄기관 + 제출한 기관 | 제출한 기관 |
+| 신청·초대 중인 과제 | 과제 이름과 참여 상태만 | 초대 수락만 |
+| 전문가 | 공유 범위(기관·팀·나만)에 따라 | 등록한 사람·관리자 |
+| 구성원·기관 정보 | 우리 기관 (다른 기관 사람은 이름·소속만) | 기관 관리자 |
+| 계정·비밀번호 | — | 계정 API로만 (화면 데이터에 비밀번호가 없어요) |
+
+권한이 없는 저장은 서버가 거절하거나(`rejected`), 허용된 부분만 반영해 고친 문서를 돌려줘요(`corrected`). 모든 삭제·계정 작업은 `audit_log`에 남아요.
+
+## 확인 방법
+
+```bash
+cd frontend && npm run build              # 타입 검사 + 빌드
+cd backend && ./gradlew test              # 권한 규칙·흐름 테스트 (PostgreSQL carnot_test 필요)
+```
+
+`backend` 테스트 DB 주소는 `CARNOT_TEST_DB_URL`로 바꿀 수 있어요 (기본 `jdbc:postgresql://localhost:5432/carnot_test`).
+
+## 보안 메모
+
+- 시연 계정(`DEMO_SEED`)은 개발·시연에만 켜세요. 운영 DB에는 넣지 마세요.
+- `.env`(DB 비밀번호, `ANTHROPIC_API_KEY`)는 절대 git에 올리지 마세요. `.gitignore`에 들어 있어요.
+- 메일 서버를 설정하지 않으면 가입 인증번호·임시 비밀번호가 서버 로그에만 남아요. 운영 전에 `MAIL_*`을 꼭 설정하세요.
+
+## 다음 단계 (아직 안 한 것)
+
+- 역할별 권한 세분화 (예: 급여·인건비 단가는 관리자·행정 담당만)
+- 첨부 파일을 DB 대신 S3 호환 저장소로 (지금은 문서 안에 들어가요)
+- 같은 문서를 두 사람이 동시에 고칠 때 충돌 알림 (지금은 나중에 저장한 쪽이 남아요. `records.version`을 쓰면 돼요)
+- 대학 통합인증(SSO: OIDC·SAML) 연결
+- `core/*.js`를 TypeScript로 차례로 옮기며 타입 붙이기

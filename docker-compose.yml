@@ -1,0 +1,31 @@
+# 한 대의 서버(또는 기관 내부 설치)에서 바로 띄우기: docker compose up -d
+# 값은 .env에서 읽어요 (.env.example 참고).
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: carnot
+      POSTGRES_USER: ${DB_USER:-carnot}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD를 .env에 넣어 주세요}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-carnot} -d carnot"]
+      interval: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/carnot
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:

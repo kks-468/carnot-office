@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: ${CARNOT_TEST_DB_URL:jdbc:postgresql://localhost:5432/carnot_test}
+    username: ${CARNOT_TEST_DB_USER:carnot}
+    password: ${CARNOT_TEST_DB_PASSWORD:carnot}
+  flyway:
+    clean-disabled: false
+carnot:
+  demo:
+    enabled: true
