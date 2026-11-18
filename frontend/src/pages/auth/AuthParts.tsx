@@ -5,12 +5,12 @@ import { PW_OK } from '../../core/catalog';
 import { In } from '../../ui/primitives';
 import { BrandMark } from '../../ui/BrandMark';
 
-/** 로그인할 회사의 로고 (설정 → 조직도에서 올린 로고). 로고가 없으면 회사 이름을 써요. */
+/** 로그인할 회사: 이름 아래에 그 회사가 올린 로고 (설정 → 조직도) */
 export function OrgMark({ t }: { t: { name: string; short?: string; logo?: string } }) {
   return (
     <div className="orghead">
-      {t.logo ? <img src={t.logo} alt={`${t.name} 로고`} /> : <span className="orgname-only">{t.short || t.name}</span>}
-      {t.logo ? <span className="small muted">{t.name}</span> : null}
+      <span className="orgname">{t.short || t.name}</span>
+      {t.logo ? <img src={t.logo} alt={`${t.name} 로고`} /> : null}
     </div>
   );
 }

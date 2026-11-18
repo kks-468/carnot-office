@@ -57,13 +57,12 @@ export function installTenantActions(): void {
     async login() {
       const f = S.f;
       // 입력칸에서 Enter를 누르면 여기로 와요: 단계에 맞는 동작으로 넘겨요
-      if (!S.tenant) return a.tenantGo();
       if (f.l_step === 'newpw') return a.loginNewPw();
       const code = (S.tenant?.code || f.l_org || '').trim().toLowerCase();
       const id = (f.l_id || '').trim().toLowerCase();
       f.l_err = '';
       if (!code || !id || !f.l_pw) {
-        f.l_err = '아이디와 비밀번호를 입력해 주세요.';
+        f.l_err = S.tenant ? '아이디와 비밀번호를 입력해 주세요.' : '회사 아이디, 아이디, 비밀번호를 모두 입력해 주세요.';
         return render();
       }
       f.l_org = code;

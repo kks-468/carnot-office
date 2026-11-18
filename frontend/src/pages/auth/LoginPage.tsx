@@ -1,8 +1,8 @@
 // 로그인: ① 회사 주소 → ② 아이디·비밀번호 → (관리자가 만든 계정이면) ③ 새 비밀번호 정하기
 import { S, useS } from '../../core/state';
 import { person } from '../../core/org';
-import { Btn, Check, Field, In, LinkBtn } from '../../ui/primitives';
-import { codeFromUrl, tenantHref } from '../../platform/tenant';
+import { Btn, Check, Field, LinkBtn } from '../../ui/primitives';
+import { tenantHref } from '../../platform/tenant';
 import { AuthBox, Err, PwField, PwRule } from './AuthParts';
 
 const DEMO: [string, string, string][] = [
@@ -52,35 +52,34 @@ export function LoginPage() {
   const f = S.f;
   const t = S.tenant;
 
-  // ① 회사 주소
+  // 서비스 주소로 들어왔을 때: 회사 아이디 · 아이디 · 비밀번호 (로그인하면 주소가 회사 주소로 바뀌어요)
   if (!t)
     return (
       <AuthBox>
-        <h1>회사 주소로 로그인</h1>
+        <h1>로그인</h1>
         <p className="muted" style={{ margin: '-8px 0 0' }}>
-          회사마다 로그인 주소가 따로 있어요. 관리자에게 받은 회사 주소의 끝부분(회사 아이디)을 입력해 주세요.
+          회사 아이디와 내 아이디로 로그인해요. 회사 주소(예: {prefix().replace(/^https?:\/\//, '')}saesol)로 들어오면 아이디와 비밀번호만 입력해요.
         </p>
-        <div className="field">
-          <label htmlFor="f-l_tcode">회사 주소</label>
-          <div className="tenantaddr">
-            <span className="pre" title={prefix()}>
-              {prefix().replace(/^https?:\/\//, '')}
-            </span>
-            <In id="f-l_tcode" data-b="l_tcode" value={f.l_tcode || codeFromUrl() || ''} placeholder="예: saesol" autoComplete="organization" autoCapitalize="none" spellCheck={false} />
-          </div>
-        </div>
+        <Field label="회사 아이디" name="l_org" ph="예: saesol" />
+        <Field label="아이디" name="l_id" ph="예: seoyun.kim" />
+        <PwField label="비밀번호" name="l_pw" ph="비밀번호" />
+        <label className="check" htmlFor="f-l_keep">
+          <Check id="f-l_keep" data-b="l_keep" checked={!!f.l_keep} />
+          <span>로그인 상태 유지</span>
+        </label>
         <Err msg={f.l_err} />
-        <Btn a="tenantGo" className="btn primary full">
-          다음
+        <Btn a="login" className="btn primary full">
+          로그인
         </Btn>
         <div className="authlinks">
-          <span className="muted">처음이세요?</span>
           <LinkBtn a="goSignup">기관 회원가입</LinkBtn>
+          <span className="muted">·</span>
+          <LinkBtn a="goFindPw">비밀번호 찾기</LinkBtn>
         </div>
         {S.demo ? (
           <div className="demoacct">
             <span className="small">
-              <b>시연 회사 주소</b>
+              <b>시연 회사 주소</b> · 누르면 그 회사 로그인 화면으로 가요
             </span>
             <div className="row">
               {DEMO_ORGS.map(([c, n]) => (
@@ -91,6 +90,7 @@ export function LoginPage() {
             </div>
           </div>
         ) : null}
+        <DemoAccounts />
       </AuthBox>
     );
 

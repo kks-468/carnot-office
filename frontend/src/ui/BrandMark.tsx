@@ -1,11 +1,10 @@
-// 서비스 이름표: Carnot 로고 + office (카르노오피스)
-import { LOGO } from '../core/catalog';
+// 서비스 이름표: Carnot office 로고 (어두운 바탕용)
+import BRAND from '../assets/brand-office.webp';
 
 export function BrandMark({ className = '' }: { className?: string }) {
   return (
-    <div className={`brandmark ${className}`} aria-label="Carnot office">
-      <img src={LOGO} alt="Carnot" />
-      <span>office</span>
+    <div className={`brandmark ${className}`}>
+      <img src={BRAND} alt="Carnot office" />
     </div>
   );
 }

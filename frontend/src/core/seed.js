@@ -181,4 +181,6 @@ seedPropYears();
 seedAppr();migrateLines();
 // 시연: 새솔대는 연구행정팀이 급여와 모든 과제 연구비를 볼 수 있게 열람 권한을 정해 뒀어요 (설정 → 열람 권한).
 S.orgs.sa.acl={pay:{units:['연구행정팀']},research:{members:true,units:['연구행정팀']}};
+// 시연: 새솔대 로고 예시 (로그인 화면에 보여요. 설정 → 조직도에서 바꿀 수 있어요)
+S.orgs.sa.logo='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 360 96%22%3E%3Ccircle cx=%2248%22 cy=%2248%22 r=%2240%22 fill=%22%231f5c46%22/%3E%3Ccircle cx=%2248%22 cy=%2248%22 r=%2233%22 fill=%22none%22 stroke=%22%23f3efe2%22 stroke-width=%222%22/%3E%3Cpath d=%22M48 20 L64 44 H56 L70 62 H54 V74 H42 V62 H26 L40 44 H32 Z%22 fill=%22%23f3efe2%22/%3E%3Ctext x=%22102%22 y=%2248%22 font-family=%22%27Noto Serif KR%27,%27Nanum Myeongjo%27,serif%22 font-size=%2230%22 font-weight=%22700%22 fill=%22%231f5c46%22%3E%EC%83%88%EC%86%94%EB%8C%80%ED%95%99%EA%B5%90%3C/text%3E%3Ctext x=%22104%22 y=%2274%22 font-family=%22Arial,Helvetica,sans-serif%22 font-size=%2213.5%22 letter-spacing=%222.4%22 fill=%22%234c6b5e%22%3ESAESOL UNIVERSITY%3C/text%3E%3C/svg%3E';
 }
