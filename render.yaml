@@ -1,0 +1,23 @@
+# Render 블루프린트: Render 대시보드 → New → Blueprint 에서 이 저장소를 고르면 아래대로 만들어져요.
+# DB는 Neon을 써요. DB_URL · DB_USER · DB_PASSWORD 는 만들 때 화면에서 직접 넣어요.
+services:
+  - type: web
+    name: carnot-office
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: singapore
+    plan: free            # 잠들지 않게 하려면 starter ($7/월)
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_URL       # 예: jdbc:postgresql://ep-xxxx.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: DEMO_SEED     # 시험용 시연 데이터. 실제 데이터를 넣기 전에 false로 바꾸세요.
+        value: "true"
+      - key: JAVA_TOOL_OPTIONS   # 무료(512MB) 인스턴스에서 메모리를 아껴 써요
+        value: "-XX:MaxRAMPercentage=70 -XX:+UseSerialGC -Xss512k"

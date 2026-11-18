@@ -1,5 +1,7 @@
 server:
   port: ${PORT:8080}
+  # Render·Railway 같은 호스팅의 HTTPS 프록시 뒤에서 원래 주소(https)를 알아보게 해요
+  forward-headers-strategy: framework
   servlet:
     session:
       timeout: 8h
