@@ -24,6 +24,11 @@ public class ApiExceptionHandler {
         return ResponseEntity.badRequest().body(Map.of("code", "bad_request", "message", "요청 내용을 확인해 주세요."));
     }
 
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    ResponseEntity<Map<String, String>> notFound(Exception e) {
+        return ResponseEntity.status(404).body(Map.of("code", "not_found", "message", "찾는 페이지가 없어요."));
+    }
+
     @ExceptionHandler(Exception.class)
     ResponseEntity<Map<String, String>> other(Exception e) {
         log.error("처리하지 못한 오류", e);
