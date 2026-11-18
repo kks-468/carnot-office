@@ -61,7 +61,7 @@ public class AccountService {
         users.insert(id, me.orgId(), login, email.isEmpty() ? null : email, null, enc.encode(temp), OffsetDateTime.now().plusDays(14), UserRow.INVITED, false);
         records.audit(me.personId(), me.orgId(), "account.create", "person", id, null);
         if (!email.isEmpty()) mailer.send(email, "[Carnot office] 계정이 만들어졌어요",
-            name + "님, 계정이 만들어졌어요.\n아이디: " + login + "\n임시 비밀번호: " + temp + "\n로그인 화면의 ‘초대받은 직원 계정 활성화’에서 비밀번호를 정해 주세요. (14일 안에)");
+            name + "님, 계정이 만들어졌어요.\n아이디: " + login + "\n임시 비밀번호: " + temp + "\n회사 주소에서 이 아이디와 임시 비밀번호로 로그인하면 새 비밀번호를 정해요. (14일 안에)");
         ObjectNode out = p.deepCopy();
         out.put("login", login);
         out.put("acct", UserRow.INVITED);
@@ -75,7 +75,7 @@ public class AccountService {
         if (!UserRow.ACTIVE.equals(status) && !UserRow.STOPPED.equals(status)) throw ApiException.bad("바꿀 수 없는 상태예요.");
         var u = mine(me, personId);
         if (u.personId().equals(me.personId())) throw ApiException.bad("내 계정은 바꿀 수 없어요.");
-        if (UserRow.INVITED.equals(u.status())) throw ApiException.bad("아직 활성화하지 않은 계정이에요.");
+        if (UserRow.INVITED.equals(u.status())) throw ApiException.bad("아직 첫 로그인을 하지 않은 계정이에요.");
         if (UserRow.ACTIVE.equals(status) && u.passwordHash() == null) throw ApiException.bad("비밀번호를 정하지 않은 계정이에요.");
         users.setStatus(u.id(), status);
         records.audit(me.personId(), me.orgId(), "account.status", "person", personId, om.createObjectNode().put("status", status));
@@ -89,7 +89,7 @@ public class AccountService {
         if (u.admin() && !u.personId().equals(me.personId())) throw ApiException.bad("다른 관리자 계정은 초기화할 수 없어요.");
         String temp = Ids.tempPassword();
         users.setTemp(u.id(), enc.encode(temp), OffsetDateTime.now().plusDays(14), UserRow.INVITED);
-        if (u.email() != null) mailer.send(u.email(), "[Carnot office] 임시 비밀번호", "임시 비밀번호: " + temp + "\n‘초대받은 직원 계정 활성화’에서 새 비밀번호를 정해 주세요.");
+        if (u.email() != null) mailer.send(u.email(), "[Carnot office] 임시 비밀번호", "임시 비밀번호: " + temp + "\n이 비밀번호로 로그인하면 새 비밀번호를 정해요.");
         records.audit(me.personId(), me.orgId(), "account.reset", "person", personId, null);
         return temp;
     }

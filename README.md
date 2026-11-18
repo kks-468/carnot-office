@@ -39,6 +39,8 @@ npm run dev
 
 시연 데이터 계정 (비밀번호는 모두 `demo1234`):
 
+회사마다 로그인 주소가 따로 있어요: `서비스 주소/회사 아이디` (예: `http://localhost:5173/saesol`). 그 주소에서 아이디·비밀번호로 로그인하고, 관리자가 만든 직원 계정은 받은 임시 비밀번호로 처음 로그인할 때 새 비밀번호를 정해요.
+
 | 회사 아이디 | 아이디 | 사람 |
 | --- | --- | --- |
 | `saesol` | `seoyun.kim` | 새솔대 연구책임자 |
@@ -85,8 +87,9 @@ platform/    바깥과 연결 (api, 서버 저장 sync, 서버용 동작 serverA
 ### 서버 (`backend/src/main/java/kr/carnot/office`)
 
 ```
-account/   로그인·계정 활성화·직원 계정 관리 (bcrypt, 5번 틀리면 10분 잠금)
+account/   로그인·첫 로그인 비밀번호 정하기·직원 계정 관리 (bcrypt, 5번 틀리면 10분 잠금)
 signup/    기관 가입 (사업자번호 확인 · 회사 아이디 중복 확인 · 이메일 인증)
+web/       회사 주소(/회사아이디)로 화면 열기, 로그인 전 회사 이름·로고
 state/     불러오기(StateService)와 저장(SyncService) — 기관별 권한을 여기서 지켜요
 project/   연구단 참여 신청 · 1회용 초대번호 · 초대할 기관 찾기
 ai/        Anthropic API 프록시 (API 키는 서버에만)

@@ -1,4 +1,4 @@
-// 기관 회원가입 · 직원 계정 활성화 · 비밀번호 찾기
+// 기관 회원가입 · 비밀번호 찾기
 import type { ReactNode } from 'react';
 import { useS } from '../../core/state';
 import { orgCfg } from '../../core/org';
@@ -222,35 +222,6 @@ export function SignupPage() {
           <Btn a="suBack">이전</Btn>
           <Btn a="suManual" className="btn primary">
             검토 요청
-          </Btn>
-        </Row>
-      </>
-    );
-  if (s.step === 'activate')
-    c = (
-      <>
-        <h1>직원 계정 활성화</h1>
-        <p className="muted" style={{ margin: '-6px 0 0' }}>
-          관리자가 만든 계정은 초대 메일의 임시 비밀번호로 처음 한 번 활성화해요.
-        </p>
-        <Field label="회사 아이디" name="a_org" ph="예: saesol" />
-        <Field label="아이디" name="a_id" />
-        <PwField label="임시 비밀번호" name="a_tmp" />
-        <div className="grid2">
-          <PwField label="새 비밀번호" name="a_new" />
-          <PwField label="새 비밀번호 확인" name="a_new2" />
-        </div>
-        <PwRule v={f.a_new} />
-        {S.demo ? (
-          <div className="small muted">
-            시연: <LinkBtn a="actFill">saesol / taeho.yoon / temp1234</LinkBtn>
-          </div>
-        ) : null}
-        <Err msg={s.err} />
-        <Row>
-          <Btn a="closeSignup">로그인으로</Btn>
-          <Btn a="activate" className="btn primary">
-            활성화하고 로그인
           </Btn>
         </Row>
       </>

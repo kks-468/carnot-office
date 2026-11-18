@@ -1,4 +1,5 @@
 // 프로토타입 화면을 React 컴포넌트로 옮겼어요. 버튼·입력은 data-* 속성으로 core/actions의 A와 연결돼요.
+import { tenantHref } from '../../platform/tenant';
 import { TODAY } from '../../core/catalog';
 import { lvName, me, orgCfg, person } from '../../core/org';
 import { costParts, gradesOf, insOf, leaveCalc, payParts, payYears, pgOf, workdays } from '../../core/pay';
@@ -37,7 +38,7 @@ export function StaffPage() {
               margin: 0,
             }}
           >
-            직원은 <b className="num">아이디@{o.code || ''}</b>로 로그인해요. 계정을 만들면 초대 메일과 임시 비밀번호가 나가요.
+            직원은 회사 주소 <b className="num">{tenantHref(o.code || '').replace(/^https?:\/\//, '')}</b>에서 아이디와 비밀번호로 로그인해요. 계정을 만들면 임시 비밀번호가 나오고, 직원이 그 비밀번호로 처음 로그인할 때 새 비밀번호를 정해요.
           </p>
           <button className="btn sm primary" data-a="newStaff">
             + 직원 계정 만들기

@@ -10,6 +10,7 @@ import { toast } from '../core/runtime';
 import { esc, uid } from '../core/util';
 import { api, type ApiError } from './api';
 import { applyState, clearData, reload } from './sync';
+import { tenantHref } from './tenant';
 
 const LOGIN_RE = /^[a-z0-9._-]{3,}$/;
 const msg = (e: unknown) => (e as ApiError)?.message || '잠시 뒤 다시 해 주세요.';
@@ -22,7 +23,7 @@ async function enter(personId: string): Promise<void> {
 export function installServerActions(): void {
   const a = A as Record<string, (...args: any[]) => any>;
 
-  // ---- 로그인 · 로그아웃 · 계정 활성화 ----
+  // ---- 로그인 · 로그아웃 (로그인과 첫 비밀번호 정하기는 tenantActions에서 다시 감싸요) ----
   a.login = async () => {
     const f = S.f;
     if (!f.l_org?.trim() || !f.l_id?.trim() || !f.l_pw) {
@@ -48,22 +49,6 @@ export function installServerActions(): void {
     logout0();
     clearData();
     render();
-  };
-
-  a.activate = async () => {
-    const f = S.f,
-      s = S.signup;
-    s.err = !PW_OK(f.a_new) ? '새 비밀번호는 영문과 숫자를 섞어 8자 이상이어야 해요.' : f.a_new !== f.a_new2 ? '새 비밀번호가 서로 달라요.' : '';
-    if (s.err) return render();
-    try {
-      const me = await api('/api/auth/activate', { body: { orgCode: f.a_org, login: f.a_id, tempPassword: f.a_tmp, newPassword: f.a_new } });
-      S.signup = null;
-      await enter(me.personId);
-      toast(`${person(me.personId)?.name || ''}님 계정을 활성화했어요.`);
-    } catch (e) {
-      s.err = msg(e);
-      render();
-    }
   };
 
   // ---- 기관 가입 ----
@@ -245,7 +230,7 @@ export function installServerActions(): void {
       (S.pay[S.payYear] = S.pay[S.payYear] || {})[r.person.id] = +f.s_pay || 0;
       S.modal = null;
       render();
-      toast(`${rec.name}님 계정(${lg}@${S.orgs[S.view].code})을 만들었어요. 임시 비밀번호 ${r.tempPassword} — 직원에게 전달해 주세요.`);
+      toast(`${rec.name}님 계정을 만들었어요. 회사 주소 ${tenantHref(S.orgs[S.view].code)} · 아이디 ${lg} · 임시 비밀번호 ${r.tempPassword} — 직원에게 전달해 주세요. 첫 로그인 때 새 비밀번호를 정해요.`, 20000);
     } catch (e) {
       m.err = msg(e);
       render();
@@ -276,7 +261,7 @@ export function installServerActions(): void {
       const r = await api(`/api/accounts/${encodeURIComponent(x)}/reset`, { method: 'POST' });
       p.acct = '초대됨';
       render();
-      toast(`${p.name}님 임시 비밀번호 ${r.tempPassword} — 직원에게 전달해 주세요. (‘초대받은 직원 계정 활성화’에서 새 비밀번호를 정해요)`);
+      toast(`${p.name}님 임시 비밀번호 ${r.tempPassword} — 직원에게 전달해 주세요. 이 비밀번호로 로그인하면 새 비밀번호를 정해요.`, 20000);
     } catch (e) {
       toast(msg(e));
     }

@@ -461,3 +461,15 @@ details.cat ul{margin:6px 0 0;padding-left:18px;font-size:13px}
   .evrow .ctl{justify-content:flex-start}
   .a4wrap .a4{zoom:.4}
 }
+/* 서비스 이름표 (Carnot office) */
+.brandmark{display:flex;align-items:center;gap:8px}
+.brandmark img{display:block;width:118px;height:auto}
+.brandmark span{font-size:22px;font-weight:600;letter-spacing:.01em;color:#fff;line-height:1;transform:translateY(2px)}
+.signup .brandmark.onbrand{margin-bottom:18px}
+/* 로그인 상자 안의 회사 로고 */
+.orghead{display:flex;flex-direction:column;align-items:center;gap:6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.orghead img{max-width:200px;max-height:64px;object-fit:contain}
+.orghead .orgname-only{font-size:20px;font-weight:700;color:var(--brand);padding:6px 0}
+.tenantaddr{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.tenantaddr .pre{display:flex;align-items:center;padding:0 10px;background:var(--sunk);color:var(--muted);font-size:13px;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis}
+.tenantaddr input{border:0;border-radius:0;flex:1;min-width:0;padding:10px 12px;font-size:14px;background:transparent;outline-offset:-2px}

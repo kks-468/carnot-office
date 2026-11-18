@@ -1,16 +1,27 @@
 // 로그인·가입 화면에서 함께 쓰는 부품
 import type { ReactNode } from 'react';
 import { S } from '../../core/state';
-import { LOGO, PW_OK } from '../../core/catalog';
+import { PW_OK } from '../../core/catalog';
 import { In } from '../../ui/primitives';
+import { BrandMark } from '../../ui/BrandMark';
 
-export function AuthBox({ children, wide }: { children: ReactNode; wide?: boolean }) {
+/** 로그인할 회사의 로고 (설정 → 조직도에서 올린 로고). 로고가 없으면 회사 이름을 써요. */
+export function OrgMark({ t }: { t: { name: string; short?: string; logo?: string } }) {
+  return (
+    <div className="orghead">
+      {t.logo ? <img src={t.logo} alt={`${t.name} 로고`} /> : <span className="orgname-only">{t.short || t.name}</span>}
+      {t.logo ? <span className="small muted">{t.name}</span> : null}
+    </div>
+  );
+}
+
+/** 로그인·가입 화면 틀: 위에는 서비스 이름표(Carnot office), 흰 상자 안에는 회사 로고와 입력칸 */
+export function AuthBox({ children, wide, org }: { children: ReactNode; wide?: boolean; org?: { name: string; short?: string; logo?: string } | null }) {
   return (
     <div className="signup">
+      <BrandMark className="onbrand" />
       <div className={`signbox ${wide ? '' : 'auth'}`}>
-        <div className="logo">
-          <img src={LOGO} alt="Carnot" style={{ width: 110 }} />
-        </div>
+        {org ? <OrgMark t={org} /> : null}
         {children}
       </div>
       <p className="authcopy">Carnot office · © 2026 Carnot. All rights reserved.</p>

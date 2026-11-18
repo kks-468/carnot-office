@@ -8,7 +8,7 @@ import { fmtNum } from './util';
 export const NATIVE_VALUE=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
 export function numify(root){root.querySelectorAll('input[type="number"]').forEach(el=>{el.type='text';el.inputMode='decimal';el.autocomplete='off';el.dataset.num='1';
   Object.defineProperty(el,'value',{configurable:true,get(){return NATIVE_VALUE.get.call(this).replace(/,/g,'')},set(v){NATIVE_VALUE.set.call(this,fmtNum(v))}});NATIVE_VALUE.set.call(el,fmtNum(el.getAttribute('value')))})}
-export let toastT;export function toast(t){const e=document.getElementById('toast');e.textContent=t;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,3400)}
+export let toastT;export function toast(t,ms=3400){const e=document.getElementById('toast');e.textContent=t;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,ms)}
 export const openModal=(k,extra={},defaults={})=>{S.modal={k,...extra};if(k==='entry'&&!('e_fund' in defaults))defaults.e_fund='현금';Object.assign(S.f,defaults);render()};
 export const toTab=(tab,opts={})=>{S.modal=null;S.signup=null;S.menu='admin';S.tab=tab;S.mwiz=null;Object.assign(S,opts);S.newEntry=opts.newEntry??null;render();window.scrollTo(0,0)};
 export const firstProject=()=>visible()[0];

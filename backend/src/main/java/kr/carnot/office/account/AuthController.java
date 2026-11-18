@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** /api/auth: 로그인 · 로그아웃 · 내 정보 · 계정 활성화 · 비밀번호 변경 */
+/** /api/auth: 로그인 · 로그아웃 · 내 정보 · 첫 로그인 비밀번호 정하기(activate) · 비밀번호 변경 */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -41,9 +41,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody LoginReq r, HttpServletRequest req, HttpServletResponse res) {
-        CurrentUser u = auth.login(r.orgCode(), r.login(), r.password());
-        sessions.signIn(u, req, res);
-        return me(u);
+        var r2 = auth.login(r.orgCode(), r.login(), r.password());
+        if (r2.needNewPassword()) return Map.of("needNewPassword", true);
+        sessions.signIn(r2.user(), req, res);
+        return me(r2.user());
     }
 
     @PostMapping("/activate")

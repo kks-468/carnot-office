@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 /** 기관 가입 (새 기관 만들기 · 이미 가입한 기관에 직원으로 가입 신청). */
 @Service
 public class SignupService {
+    private static final java.util.Set<String> RESERVED = java.util.Set.of("admin", "api", "assets", "actuator", "index", "favicon", "public", "login", "signup");
     private static final Pattern CODE = Pattern.compile("^[a-z0-9]{3,20}$");
     private static final Pattern MAIL = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
     private static final Pattern NUMBER = Pattern.compile("^\\d{3}-?\\d{2}-?\\d{5}$");
@@ -73,7 +74,8 @@ public class SignupService {
 
     public boolean codeFree(String code) {
         String c = code == null ? "" : code.trim().toLowerCase();
-        return CODE.matcher(c).matches() && orgs.byCode(c).isEmpty() && !c.equals("admin");
+        // 회사 주소(서비스 주소/회사 아이디)로도 쓰여서 화면·API 경로 이름은 못 써요
+        return CODE.matcher(c).matches() && orgs.byCode(c).isEmpty() && !RESERVED.contains(c);
     }
 
     /** 이메일 인증번호 보내기 (10분). 메일 서버가 없고 시연 모드면 번호를 응답에 실어 줘요. */

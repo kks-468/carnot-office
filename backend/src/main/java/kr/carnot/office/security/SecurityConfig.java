@@ -50,7 +50,7 @@ public class SecurityConfig {
             .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
             .addFilterAfter(statusFilter, CsrfCookieFilter.class)
             .authorizeHttpRequests(a -> a
-                .requestMatchers("/api/auth/**", "/api/signup/**", "/api/ai/status", "/actuator/health").permitAll()
+                .requestMatchers("/api/auth/**", "/api/signup/**", "/api/public/**", "/api/ai/status", "/actuator/health").permitAll()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll())
             .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
