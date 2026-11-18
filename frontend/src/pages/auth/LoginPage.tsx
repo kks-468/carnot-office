@@ -119,9 +119,6 @@ export function LoginPage() {
   return (
     <AuthBox org={t}>
       <h1>로그인</h1>
-      <p className="muted small" style={{ margin: '-8px 0 0' }}>
-        회사 주소 <b className="num">{tenantHref(t.code).replace(/^https?:\/\//, '')}</b>
-      </p>
       <Field label="아이디" name="l_id" ph="예: seoyun.kim" />
       <PwField label="비밀번호" name="l_pw" ph="비밀번호" />
       <label className="check" htmlFor="f-l_keep">
