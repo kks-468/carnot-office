@@ -46,7 +46,15 @@ npm run dev
 | `gaon` | `wooseok.jung` | 가온소재 (연구단 참여기관) |
 | `nuritech` | `taeo.kang` | 누리테크 |
 
-### 3) 배포 (Docker)
+### 3) 임시 서버에 올리기 (Render + Neon)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/kks-468/carnot-office)
+
+1. [Neon](https://console.neon.tech/signup)에서 DB를 만들고(지역: Singapore) 접속 정보를 받아요.
+2. 위 버튼(또는 [Render 대시보드 → New → Blueprint](https://dashboard.render.com/blueprints))에서 이 저장소를 고르고 `DB_URL`·`DB_USER`·`DB_PASSWORD`를 넣어요. 설정은 `render.yaml`에 있어요.
+3. 빌드가 끝나면 `https://carnot-office.onrender.com` 같은 주소로 열려요.
+
+### 4) 배포 (Docker)
 
 ```bash
 cp .env.example .env          # DB_PASSWORD 등 값 채우기
