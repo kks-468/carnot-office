@@ -2,7 +2,6 @@
 import { S, useS } from '../../core/state';
 import { person } from '../../core/org';
 import { Btn, Check, Field, LinkBtn } from '../../ui/primitives';
-import { tenantHref } from '../../platform/tenant';
 import { AuthBox, Err, PwField, PwRule } from './AuthParts';
 
 const DEMO: [string, string, string][] = [
@@ -17,9 +16,6 @@ const DEMO_ORGS: [string, string][] = [
   ['gaon', '가온소재'],
   ['nuritech', '누리테크'],
 ];
-
-/** 서비스 주소 + / (회사 아이디가 붙는 자리) */
-const prefix = () => tenantHref('').replace(/\/$/, '/').replace(/#$/, '#');
 
 function DemoAccounts() {
   if (!S.demo) return null;
@@ -57,9 +53,6 @@ export function LoginPage() {
     return (
       <AuthBox>
         <h1>로그인</h1>
-        <p className="muted" style={{ margin: '-8px 0 0' }}>
-          회사 아이디와 내 아이디로 로그인해요. 회사 주소(예: {prefix().replace(/^https?:\/\//, '')}saesol)로 들어오면 아이디와 비밀번호만 입력해요.
-        </p>
         <Field label="회사 아이디" name="l_org" ph="예: saesol" />
         <Field label="아이디" name="l_id" ph="예: seoyun.kim" />
         <PwField label="비밀번호" name="l_pw" ph="비밀번호" />
