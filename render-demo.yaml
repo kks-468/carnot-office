@@ -1,0 +1,14 @@
+# 시연용 화면만 무료로 올리기 (서버·DB 없음, 시연 데이터로 동작)
+# Render → New → Blueprint 에서 이 저장소를 고르고 Blueprint Path에 render-demo.yaml 을 넣어요.
+services:
+  - type: web
+    runtime: static
+    name: carnot-office-demo
+    rootDir: frontend
+    buildCommand: npm ci && npm run build:demo
+    staticPublishPath: dist
+    routes:
+      # 회사 주소(/saesol 등)로 들어와도 화면을 열어요
+      - type: rewrite
+        source: /*
+        destination: /index.html

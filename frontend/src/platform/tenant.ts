@@ -1,6 +1,6 @@
 // 회사 주소: 서비스 주소 뒤에 회사 아이디를 붙여 회사마다 로그인 주소를 줘요.
 // 예) https://carnot-office.onrender.com/saesol
-// 서버 없이 도는 시연 페이지는 주소 경로를 바꿀 수 없어서 #saesol 처럼 # 뒤에 붙여요.
+// Claude 시연 페이지처럼 주소 경로를 바꿀 수 없는 곳에서는 #saesol 처럼 # 뒤에 붙여요.
 import { S, onRender } from '../core/state';
 import { api } from './api';
 import { server } from './sync';
@@ -8,20 +8,22 @@ import { server } from './sync';
 export type Tenant = { code: string; name: string; short?: string; logo?: string };
 
 const CODE = /^[a-z0-9]{3,20}$/;
+/** 주소 경로(/saesol)를 쓸 수 있는 곳인지: 서버가 있거나, 시연용 호스팅(VITE_PATH_ROUTING=1)으로 올렸을 때 */
+const usePath = () => server.on || import.meta.env.VITE_PATH_ROUTING === '1';
 /** 회사 주소로 쓸 수 없는 이름 (화면 파일·API 경로) */
 const RESERVED = new Set(['api', 'assets', 'actuator', 'index', 'favicon']);
 
 /** 지금 주소의 회사 아이디 */
 export function codeFromUrl(): string {
   const path = location.pathname.replace(/^\/+|\/+$/g, '');
-  if (server.on && CODE.test(path) && !RESERVED.has(path)) return path;
+  if (usePath() && CODE.test(path) && !RESERVED.has(path)) return path;
   const h = location.hash.replace(/^#/, '').toLowerCase();
   return CODE.test(h) && !RESERVED.has(h) ? h : '';
 }
 
 /** 사람에게 보여 줄 회사 주소 */
 export function tenantHref(code: string): string {
-  if (server.on) return `${location.origin}/${code}`;
+  if (usePath()) return `${location.origin}/${code}`;
   return `${location.origin}${location.pathname}#${code}`;
 }
 
@@ -29,7 +31,7 @@ export function tenantHref(code: string): string {
 export function setUrl(code: string | null): void {
   if (codeFromUrl() === (code || '')) return;
   try {
-    if (server.on) history.replaceState(null, '', code ? `/${code}` : '/');
+    if (usePath()) history.replaceState(null, '', code ? `/${code}` : '/');
     else history.replaceState(null, '', code ? `#${code}` : location.pathname + location.search);
   } catch {
     /* 주소를 못 바꾸는 곳(미리보기 등)에서는 그대로 둬요 */

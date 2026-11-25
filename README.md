@@ -48,7 +48,15 @@ npm run dev
 | `gaon` | `wooseok.jung` | 가온소재 (연구단 참여기관) |
 | `nuritech` | `taeo.kang` | 누리테크 |
 
-### 3) 임시 서버에 올리기 (Render + Neon)
+### 3) 시연 화면만 무료로 올리기 (서버·DB 없음)
+
+Render → New → **Static Site** → 이 저장소 선택 후
+- Root Directory: `frontend` · Build Command: `npm ci && npm run build:demo` · Publish Directory: `dist`
+- Redirects/Rewrites: Source `/*` → Destination `/index.html` · Action **Rewrite**
+
+(또는 New → Blueprint에서 Blueprint Path를 `render-demo.yaml`로.) 시연 데이터로 동작하고 저장되지 않아요. 회사 주소는 `…onrender.com/saesol`.
+
+### 4) 임시 서버에 올리기 (Render + Neon)
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/kks-468/carnot-office)
 
@@ -56,7 +64,7 @@ npm run dev
 2. 위 버튼(또는 [Render 대시보드 → New → Blueprint](https://dashboard.render.com/blueprints))에서 이 저장소를 고르고 `DB_URL`·`DB_USER`·`DB_PASSWORD`를 넣어요. 설정은 `render.yaml`에 있어요.
 3. 빌드가 끝나면 `https://carnot-office.onrender.com` 같은 주소로 열려요.
 
-### 4) 배포 (Docker)
+### 5) 배포 (Docker)
 
 ```bash
 cp .env.example .env          # DB_PASSWORD 등 값 채우기
@@ -151,4 +159,5 @@ cd backend && ./gradlew test              # 권한 규칙·흐름 테스트 (Pos
 - 첨부 파일을 DB 대신 S3 호환 저장소로 (지금은 문서 안에 들어가요)
 - 같은 문서를 두 사람이 동시에 고칠 때 충돌 알림 (지금은 나중에 저장한 쪽이 남아요. `records.version`을 쓰면 돼요)
 - 대학 통합인증(SSO: OIDC·SAML) 연결
+- 메일 (추가 개발): ① 기관이 쓰는 메일(IMAP·SMTP) 연결 → ③ 자체 메일 서버 + 도메인 연결(`아이디@회사도메인` 자동 생성). 화면·발송 기능은 공통으로 만들어 둘 다 쓰게
 - `core/*.js`를 TypeScript로 차례로 옮기며 타입 붙이기
